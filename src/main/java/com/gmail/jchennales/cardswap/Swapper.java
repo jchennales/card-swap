@@ -14,6 +14,13 @@ public class Swapper {
 	// Increasing this number makes members with many offered cards more "collaborative" with the group
 	// by allowing others to swap more wanted cards for unwanted ones.
 	private static final int maxAwardContributionDistance = 1;
+
+	// Maximum value for the opposite concept, the contribution-award difference for a single team member
+	// While the above value will control how many "extra" cards a member can get, the "giving" member could
+	// potentially be giving that number to each of the other team members. This figure will further limit
+	// this one memeber's exposure to unwanted extra swaps. Again, a higher value makes it more "collaborative"
+	// with the group
+	private static final int maxUnwantedForTeamMember = 5;
 	
 	public static List<Card> readCardsFromString(String s, TeamMember owner) {
 
@@ -191,9 +198,17 @@ public class Swapper {
 				for (Card card : wantedCards) {
 					if (offeredCardPool.containsKey(card.getCode())) {
 						offered = offeredCardPool.get(card.getCode()); 
-						matchedCard = offered.get(0);
-						matchedCard.setStatus("N");
-						break;
+						for (int i = 0; i < offered.size(); i++) {
+							Card c = offered.get(i);
+							if (c.getOwner().getGivenCards().size() - c.getOwner().getAwardedCards().size() < maxUnwantedForTeamMember) {
+								matchedCard = c;
+								matchedCard.setStatus("N");
+								break;
+							}
+							else {
+							}
+						}
+						if (matchedCard != null) break;
 					}
 				}
 			}

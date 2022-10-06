@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class Swapper {
 
@@ -98,10 +97,10 @@ public class Swapper {
 
 	}
 
-	private static void populateCardPool(Map<String, List<Card>> cardPool, List<TeamMember> teamMembers, Function<TeamMember, List<Card>> cardsGetter) {
+	private static void populateOfferedCardPool(Map<String, List<Card>> cardPool, List<TeamMember> teamMembers) {
 		
 		for (TeamMember member : teamMembers) {
-			List<Card> memberCards = cardsGetter.apply(member);
+			List<Card> memberCards = member.getOfferedCards();
 			for (Card card : memberCards) {
 				List<Card> cardList = cardPool.get(card.getCode());
 				if (cardList == null) cardList = new ArrayList<>();
@@ -118,7 +117,7 @@ public class Swapper {
 				teamMember.getOfferedCards().size() - teamMember.getAwardedCards().size());
 	}
 	
-	private static void matchCards(List<TeamMember> teamMembers, Map<String, List<Card>> offeredCardPool, Map<String, List<Card>> wantedCardPool, String mode) {
+	private static void matchCards(List<TeamMember> teamMembers, Map<String, List<Card>> offeredCardPool, String mode) {
 
 		TeamMember bestMember = null;
 		int score = 0;
@@ -258,21 +257,18 @@ public class Swapper {
 			return;
 		}
 		
-		
 		Map<String, List<Card>> offeredCardPool = new HashMap<>();
-		Map<String, List<Card>> wantedCardPool = new HashMap<>();
 		
 		List <TeamMember> teamMembers = readTeamMembers("team.txt");
 		
-		populateCardPool(offeredCardPool, teamMembers, TeamMember::getOfferedCards);
-		populateCardPool(wantedCardPool, teamMembers, TeamMember::getWantedCards);
+		populateOfferedCardPool(offeredCardPool, teamMembers);
 
 		// Distribute wanted cards as fairly as we can
-		matchCards(teamMembers, offeredCardPool, wantedCardPool, "N");
+		matchCards(teamMembers, offeredCardPool, "N");
 		// Return same cards if available to owners
-		matchCards(teamMembers, offeredCardPool, wantedCardPool, "K");
+		matchCards(teamMembers, offeredCardPool, "K");
 		// Fill out remaining slots with anything left in the offer pool
-		matchCards(teamMembers, offeredCardPool, wantedCardPool, "U");
+		matchCards(teamMembers, offeredCardPool, "U");
 		
 		System.out.println("\n\nAwards summary (Origin/CardCode/Destination/SwapType):");
 		for (TeamMember teamMember : teamMembers) {
